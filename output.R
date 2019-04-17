@@ -9,6 +9,7 @@ library(gdata)
 library(ggplot2)
 library(vegan)
 library(car)
+library(lme4)
 library(coin)
 library(knitr)
 library(kableExtra)
@@ -17,70 +18,9 @@ library(stargazer)
 library(lme4)
 library(MuMIn)
 library(nlme)
+library(ggfortify)
 
-#1 data table
-
-rm(list=ls())
-
-#using 1973 as a jumping off point template
-all_ledgers <- read.csv("ledgers/ledger_named_1973.csv")
-
-#append all other years next
-ledger_years <- c(1974:2018)
-
-for (year in ledger_years){
-  filename = paste("ledgers/ledger_named_", year, ".csv", sep="")
-  if (file.exists(filename)){
-    ledger <- read.csv(filename)
-    all_ledgers <- rbind.fill(all_ledgers, ledger)
-    print(filename)
-  }
-}
-
-ebird_2018 <- read.csv("GBIF_ebird_table_code_year.csv")
-colnames(ebird_2018)[1] <- "Name"
-
-all_years <- rbind.fill(all_ledgers, ebird_2018)
-
-new <- gather(data = all_years, 
-              key = Week, 
-              value = Record, 
-              -c(Name, Year))
-
-write.csv(new, file = "final_long_list.csv" ,row.names=FALSE)
-
-agg <- aggregate(new,
-                 by = list(new$Year, new$Week),
-                 FUN = mean)
-
-agg <- agg[, c(2,4,6)]
-
-years <- unique(agg$Year)
-weeks <- c(paste("Wk_", 1:52, sep=""))
-
-data <- data.frame(matrix(ncol = 52, nrow = 20))
-colnames(data) <- weeks
-rownames(data) <- years
-
-for(year in years){
-  for(week in weeks){
-    sample =  agg[ which(agg$Group.2==week & agg$Year == year), ]
-    if(is.na(sample$Record[1])){
-      data[as.character(year), week] = 0
-    }
-    else{
-      data[as.character(year), week] = 1
-    }
-  }
-}
-write.csv(data, file = "data_table.csv")
-
-data <- data[9:36]
-
-data$Sample_Weeks <- rowSums(data)
-data_output <- select(data, Sample_Weeks)
-
-write.csv(data_output, file = "data_table_output.csv")
+# whole community chao estimates
 
 rm(list=ls())
 
@@ -99,6 +39,8 @@ start <- start[!duplicated(start), ]
 start$Record <- as.numeric(start$Record)
 
 start <- split(start, start$Year)
+
+# function for chao
 
 estimate_func <- function(sobs, m, q1, q2) {
   estimate <- sobs + ((m-1)/m)*(q1*(q1-1)/(2*(q2+1)))
@@ -171,19 +113,20 @@ all_output$X[18] <- "Modern"
 
 write.csv(all_output, file = "all_output.csv" ,row.names=FALSE)
 
-library(ggfortify)
-
-linear <- lm(Estimate ~ Year, data = minus)
+linear <- lm(Estimate ~ Year, data = all_output)
 summary(linear)
 confint(linear)
 par(mfrow=c(1,1))
 plot(Estimate ~ Year, data = all_output)
-autoplot(linear)
+autoplot(linear) + theme_minimal()
 abline(linear)
-x <- residuals(linear)
-auto <- acf(residuals(linear))
 plot(auto, main = NA) + theme_minimal()
 plot(linear)
+
+# Autocorrelation
+
+x <- residuals(linear)
+auto <- acf(residuals(linear))
 
 bacf <- acf(x, plot = FALSE)
 bacfdf <- with(bacf, data.frame(lag, acf))
@@ -196,21 +139,12 @@ q <- ggplot(data = bacfdf, mapping = aes(x = lag, y = acf)) +
   theme_minimal()
 q + ylab("Autocorrelation Function (ACF)") + xlab("Lag") 
 
-plot <- ggplot(all_output, aes(x = Year, y = Estimate)) + 
-  geom_point(size = 2, (aes(colour = factor(X)))) +
-  scale_color_manual(values = c("red",  "blue")) +
-  geom_smooth(method='lm', se=FALSE, colour="blue") +
-  geom_smooth(data=minus, method ='lm', se=FALSE, linetype="dashed", colour="red") +#geom_errorbar(aes(ymax = Upper, ymin = Lower)) +
-  labs(color='Data Type', ylab('Chao2-bc Estimate'), xlab('Year')) +
-  theme_minimal()
+# without 2018
 
-plot + ylab('Species Richness Estimate')
-plot(linear[1])
-
-#using 1973 as a jumping off point template
+# using 1973 as a jumping off point template
 minus <- read.csv("output_1973.csv", strip.white = TRUE)
 
-#append all other years next
+# append all other years next
 output_years <- c(1974:2017)
 
 for (year in output_years){
@@ -223,174 +157,95 @@ for (year in output_years){
 }
 
 summary(minus)
+minus_linear <- lm(Estimate ~ Year, data = minus)
+summary(minus_linear)
+confint(minus_linear)
+par(mfrow=c(1,1))
+plot(Estimate ~ Year, data = minus)
+autoplot(minus_linear) + theme_minimal()
+abline(minus_linear)
+plot(auto, main = NA) + theme_minimal()
+plot(minus_linear)
 
-plot <- ggplot(all_output, aes(x = Year, y = Estimate)) + 
-  geom_point(size = 1) +
-  geom_smooth(method='lm', se=FALSE, aes(colour="w/ 2018")) +
-  geom_smooth(data=minus, method ='lm', se=FALSE) + 
-  labs(color='Trend', ylab('Estimate'), xlab('Year')) +
+y <- residuals(minus_linear)
+auto <- acf(residuals(minus_linear))
+
+bacf <- acf(y, plot = FALSE)
+bacfdf <- with(bacf, data.frame(lag, acf))
+ci2 = qnorm((1 + .95)/2)/sqrt(length(y))
+
+q <- ggplot(data = bacfdf, mapping = aes(x = lag, y = acf)) +
+  geom_hline(aes(yintercept = 0)) +
+  geom_segment(mapping = aes(xend = lag, yend = 0))+
+  geom_hline(yintercept = c(ci2, -ci2), color = "red", linetype = "dashed") +
   theme_minimal()
+q + ylab("Autocorrelation Function (ACF)") + xlab("Lag") 
+
+# plot final
 
 plot <- ggplot(all_output, aes(x = Year, y = Estimate)) + 
   geom_point(size = 2, (aes(colour = factor(X)))) +
-  geom_smooth(method='lm', se=FALSE, colour="black") + #geom_errorbar(aes(ymax = Upper, ymin = Lower)) +
-  geom_smooth(method='lm') +
-  labs(color='Data', ylab('Estimate'), xlab('Year')) +
+  scale_color_manual(values = c("red",  "blue")) +
+  geom_smooth(method='lm', se=FALSE, colour="blue") +
+  geom_smooth(data=minus, method ='lm', se=FALSE, linetype="dashed", colour="red") +#geom_errorbar(aes(ymax = Upper, ymin = Lower)) +
+  labs(color='Data Type', ylab('Chao2-bc Estimate'), xlab('Year')) +
   theme_minimal()
 
-plot + ggtitle("Linear Regression; Total Species Richness")
-
-library(gvlma)
-gvmodel <- gvlma(fit) 
-summary(gvmodel)
+plot + ylab('Species Richness Estimate')
 
 
-linear2 <- lm(Estimate ~ Year, data = minus)
-summary(linear2)
-par(mfrow=c(1,1))
-plot(Estimate ~ Year, data = minus)
-abline(linear2)
+# raw functional groups (test)
 
-par(mfrow=c(2,2))
-plot(linear2)
+#rm(list=ls())
 
-par(mfrow=c(2,2))
-plot(linear)
+#start <- read.csv("final_long_clusters.csv")
 
-par(mfrow=c(1,1))
-plot(residuals(linear))
+#start[start == 0] <- NA
+#start <- na.omit(start)
 
-plot(residuals(linear),type="b")
-abline(h=0,lty=3)
+#start <- split(start, start$Year)
 
-acf(residuals(linear))
+#clusters <- c(1,2,3,4)
 
-linear.ac <- gls(Estimate ~ Year, data = all_output, 
-                 correlation = corAR1(form=~Year),
-                 na.action=na.omit)
-summary(linear.ac)
+#clusters_per_year <- data.frame()
+#for(item in start){
+#  species <- length(unique(item$Name))
+#  this_year <- item$Year[1]
+#  for(cluster in clusters){
+#    year_cluster <- filter(item, clusters %in% cluster)
+#    cluster_species <- length(unique(year_cluster$Name))
+#    clusters_per_year <- rbind(clusters_per_year, c(this_year, species, cluster_species))
+#  }
+#}
 
-coef(linear)
+#colnames(clusters_per_year)[1] <-  "Year"
+#colnames(clusters_per_year)[2] <-  "total_Species"
+#colnames(clusters_per_year)[3] <-  "cluster_Species"
 
-coef(linear.ac)
+#clusters_per_year$cluster <- rep(cbind(1,2,3,4))
 
-plot(fitted(linear.ac),residuals(linear.ac))
-abline(h=0,lty=3)
+#plot2 <- ggplot(data = clusters_per_year, aes(x=Year, y=cluster_Species, col=as.factor(cluster))) +
+#  geom_point() +
+#  geom_smooth(method='lm',se=FALSE) + 
+#  labs(color='Functional Group', ylab('Estimate'), xlab('Year')) +
+#  scale_color_manual(labels = c("Green-Space Obligate", "Urban-Space Obligate", 
+#                                "Facultative", "None"), values = c("green", "brown", "red", "blue")) +
+#  theme_minimal()
 
-qqnorm(linear.ac)
+#plot2 + ylab('Species Richness Estimate')
 
-acf(residuals(linear.ac,type="p"))
+#ggplot(clusters_per_year, aes(x=Year, y=cluster_Species, fill=cluster)) +
+#  geom_bar(stat="identity")+theme_minimal()
 
-model.sel(linear,linear.ac)
+#multiple <- lm(cluster_Species ~ as.factor(cluster), data = clusters_per_year)
+#summary(multiple)
 
-#2 diagnostics
-
-#2 autocorr
-
-#3 functional tables
-
-#4 sp. richness
-
-data(BCI)
-S <- specnumber(BCI) # observed number of species
-(raremax <- min(rowSums(BCI)))
-Srare <- rarefy(BCI, raremax)
-plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
-abline(0, 1)
-rarecurve(BCI, step = 20, sample = raremax, col = "blue", cex = 0.6)
-
-rm(list=ls())
-
-start <- read.csv("final_long_clusters.csv")
-
-start[start == 0] <- NA
-start <- na.omit(start)
-
-start <- split(start, start$Year)
-
-clusters <- c(1,2,3,4)
-
-clusters_per_year <- data.frame()
-for(item in start){
-  species <- length(unique(item$Name))
-  this_year <- item$Year[1]
-  for(cluster in clusters){
-    year_cluster <- filter(item, clusters %in% cluster)
-    cluster_species <- length(unique(year_cluster$Name))
-    clusters_per_year <- rbind(clusters_per_year, c(this_year, species, cluster_species))
-  }
-}
-
-colnames(clusters_per_year)[1] <-  "Year"
-colnames(clusters_per_year)[2] <-  "total_Species"
-colnames(clusters_per_year)[3] <-  "cluster_Species"
-
-clusters_per_year$cluster <- rep(cbind(1,2,3,4))
-
-plot2 <- ggplot(data = clusters_per_year, aes(x=Year, y=cluster_Species, col=as.factor(cluster))) +
-  geom_point() +
-  geom_smooth(method='lm',se=FALSE) + 
-  labs(color='Functional Group', ylab('Estimate'), xlab('Year')) +
-  scale_color_manual(labels = c("Green-Space Obligate", "Urban-Space Obligate", 
-                                "Facultative", "None"), values = c("green", "brown", "red", "blue")) +
-  theme_minimal()
-
-plot2 + ylab('Species Richness Estimate')
-
-ggplot(clusters_per_year, aes(x=Year, y=cluster_Species, fill=cluster)) +
-  geom_bar(stat="identity")+theme_minimal()
-
-multiple <- lm(cluster_Species ~ as.factor(cluster), data = clusters_per_year)
-summary(multiple)
-
-par(mfrow=c(2,2))
-plot(multiple)
-
-par(mfrow=c(1,2))
-plot(linear)
-
-par(mfrow=c(1,1))
-plot(residuals(multiple))
-
-plot(residuals(multiple),type="b")
-abline(h=0,lty=3)
-
-autom <- acf(residuals(linear))
-
-plot(autom, main =" Regression; Autocorrelation")
-
-par
-
-linear.ac <- gls(Estimate ~ Year, data = all_output, 
-                 correlation = corAR1(form=~Year),
-                 na.action=na.omit)
-summary(linear.ac)
-
-coef(linear)
-
-coef(linear.ac)
-
-plot(fitted(linear.ac),residuals(linear.ac))
-abline(h=0,lty=3)
-
-qqnorm(linear.ac)
-
-acf(residuals(linear.ac,type="p"))
-
-model.sel(linear,linear.ac)
-
+#par(mfrow=c(2,2))
+#plot(multiple)
 
 ######
 
-#RAREFACTION
-
-data(BCI)
-S <- specnumber(BCI) # observed number of species
-(raremax <- min(rowSums(BCI)))
-Srare <- rarefy(BCI, raremax)
-plot(S, Srare, xlab = "Observed No. of Species", ylab = "Rarefied No. of Species")
-abline(0, 1)
-rarecurve(BCI, step = 20, sample = raremax, col = "blue", cex = 0.6, xlab = Observation, ylab = Unique Species)
+# rarefied functional groups
 
 rm(list=ls())
 
@@ -398,6 +253,11 @@ start <- read.csv("final_long_clusters.csv")
 
 start[start == 0] <- NA
 start <- na.omit(start)
+
+m <- 72
+n <- length(paste(unique(start$Name)))
+rarefaction <- matrix(0, nrow = m, ncol = n)
+colnames(rarefaction) <- paste(unique(start$Name))  
 
 start <- split(start, start$Year)
 
@@ -422,11 +282,12 @@ clusters_per_year$cluster <- rep(cbind(1,2,3,4))
 
 rownames(clusters_per_year) <- paste(clusters_per_year$Year, "_", clusters_per_year$cluster, sep="")
 
-m <- 72 #length of 
-n <- length(paste(unique(start$Name)))
-rarefaction <- matrix(0, nrow = m, ncol = n)
-colnames(rarefaction) <- paste(unique(start$Name))         
 rownames(rarefaction) <- paste(clusters_per_year$Year, "_", clusters_per_year$cluster, sep="")
+
+start <- read.csv("final_long_clusters.csv")
+
+start[start == 0] <- NA
+start <- na.omit(start)
 
 rownumbers <- c(1:length(start[, 1]))
 for(rownumber in rownumbers){
@@ -459,25 +320,23 @@ plot2 <- ggplot(data = oof, aes(x=years, y=Srare, col=as.factor(cluster))) +
                                 "Facultative", "None"), values = c("green", "chocolate", "red", "blue")) +
   theme_minimal()
 
-plot2 + ylab('Species Richness Estimate') + xlab('Year')# + ggtitle("Linear Regression: Per Functional Group") + ylim(0,8)
-
-multiple <- lm(Srare ~ years, data = cluster3)
-summary(multiple)
-confint(multiple)
-par(mfrow=c(2,2))
-plot(multiple)
+plot2 + ylab('Species Richness Estimate') + xlab('Year')
 
 cluster1 <- oof[ which(oof$cluster==1), ]
 cluster2 <- oof[ which(oof$cluster==2), ]
 cluster3 <- oof[ which(oof$cluster==3), ]
 cluster4 <- oof[ which(oof$cluster==4), ]
 
+# change out data = "cluster_"
 
-library(lme4)
+multiple <- lm(Srare ~ years, data = cluster1)
+summary(multiple)
+confint(multiple)
+par(mfrow=c(2,2))
+plot(multiple)
+
+
 fits <- lmList(Srare ~ years | factor(cluster), data=oof, pool=FALSE)
 summary(fits)
 confint(fits)
 plot(fits)
-
-check <- lm(Srare ~ years*cluster, data=oof)
-summary(check)

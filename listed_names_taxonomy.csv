@@ -1,0 +1,112 @@
+,listed_names,ebird_name,notes
+1,Heron,Ardea cinerea,
+2,Mute Swan,Cygnus olor,
+3,Mallard,Anas platyrhynchos,
+4,Sparrow Hawk,Accipiter nisus,
+5,Merlin,Falco columbarius,
+6,Kestrel,Falco tinnunculus,
+7,Pheasant,Phasianus colchicus,
+8,Corncrake,Crex crex,
+9,Moorhen,Gallinula chloropus,
+10,Oystercatcher,Haematopus ostralegus,
+11,Lapwing,Vanellus vanellus,
+12,Golden Plover,Pluvialis apricaria,european favoured over american- or pacific- variant
+13,Snipe,Gallinago gallinago,default as snipe unless otherwise stated to be jack snipe
+14,Woodcock,Scolopax rusticola,
+15,Curlew,Numenius arquata,
+16,Greater B-B Gull,Larus marinus,
+17,Lesser B-B Gull,Larus fuscus,
+18,Herring Gull,Larus argentatus,
+19,Common Gull,Larus canus,"synonymous with ""Mew Gull"" for ebird taxonomy"
+20,Black-Headed Gull,Chroicocephalus ridibundus,
+21,Stock Dove,Columba oenas,
+22,Wood Pigeon,Columba palumbus,
+23,Collared Dove,Streptopelia decaocto,
+24,Town Pigeon,Columba livia,"synonymous with ""Rock Pigeon"" for ebird taxonomy"
+25,Cuckoo,Cuculus canorus,common favoured over great spotted- variant
+26,Barn Owl,Tyto alba,
+27,Swift,Apus apus,"common favoured over chimney-, alpine- or pallid- variant"
+28,Skylark,Alauda arvensis,
+29,Swallow,Hirundo rustica,default as barn swallow unless otherwise stated to be other
+30,House Martin,Delichon urbicum,
+31,Hooded Crow,Corvus cornix,
+32,Rook,Corvus frugilegus,
+33,Jackdaw,Corvus monedula,
+34,Magpie,Pica pica,
+35,Jay,Garrulus glandarius,
+36,Great Tit,Parus major,
+37,Blue Tit,Cyanistes caeruleus,
+38,Coal Tit,Periparus ater,
+39,Long-Tailed Tit,Aegithalos caudatus,
+40,Tree Creeper,Certhia familiaris,
+41,Wren,Troglodytes troglodytes,
+42,Mistle Thrush,Turdus viscivorus,
+43,Fieldfare,Turdus pilaris,
+44,Song Thrush,Turdus philomelos,
+45,Redwing,Turdus iliacus,
+46,Blackbird,Turdus merula,
+47,Robin,Erithacus rubecula,
+48,Blackcap,Sylvia atricapilla,
+49,Willow Warbler,Phylloscopus trochilus,
+50,Chiff Chaff,Phylloscopus collybita,
+51,Goldcrest,Regulus regulus,
+52,Flycatcher,Muscicapa striata,spotted favoured over pied- or red-breasted- variant
+53,Dunnock,Prunella modularis,
+54,Meadow Pipit,Anthus pratensis,
+55,Pied Wagtail,Motacilla alba,"synonomous with ""White Wagtail"" for ebird taxonomy"
+56,Grey Wagtail,Motacilla cinerea,
+57,Starling,Sturnus vulgaris,european favoured over rosy- variant
+58,Greenfinch,Chloris chloris,
+59,Goldfinch,Carduelis carduelis,
+60,Siskin,Spinus spinus,
+61,Linnet,Linaria cannabina,
+62,Redpoll,Acanthis flammea,GBIF taxize classifies under common- variant
+63,Bullfinch,Pyrrhula pyrrhula,
+64,Crossbill,Loxia curvirostra,
+65,Chaffinch,Fringilla coelebs,
+66,Snow Bunting,Plectrophenax nivalis,
+67,Yellow Hammer,Emberiza citrinella,
+68,Reed Bunting,Emberiza schoeniclus,
+69,House Sparrow,Passer domesticus,
+70,Tree Sparrow,Passer montanus,
+71,Water Rail,Rallus aquaticus,
+72,Brambling,Fringilla montifringilla,
+73,Stonechat,Saxicola torquatus,"Saxicola rubicola non-existant in trait databse, instead using common- of which expected european- variant is a subspecies of"
+74,Teal,Anas crecca,green-winged favoured over blue-winged- or baikal- variant
+75,Redshank,Tringa totanus,common favoured over spotted- variant
+76,Kingfisher,Alcedo atthis,
+77,Yellow Bunting,Emberiza citrinella,"synonomous with ""Yellow Hammer"" for ebird taxonomy"
+78,Twite,Linaria flavirostris,
+79,Cormorant,Phalacrocorax carbo,
+80,Wheatear,Oenanthe oenanthe,"northern favoured over pied-, black-eared- or desert- variant"
+81,Landrail,Crex crex,"synonomous with ""Corn Crake"" for ebird taxonomy"
+82,Spotted Flycatcher,Muscicapa striata,
+83,Land Rail,Crex crex,"synonomous with ""Corn Crake"" for ebird taxonomy"
+84,Long-Eared Owl,Asio otus,
+85,Tufted Duck,Aythya fuligula,
+86,Whitethroat,Sylvia communis,greater favoured over lesser- variant
+87,Snow Goose,Anser anser,"Anser caerulescens non-existant in trait database, instead using type-species"
+88,Yellowhammer,Emberiza citrinella,"synonomous with ""Yellow Hammer"" for ebird taxonomy"
+89,Sedge Warbler,Acrocephalus schoenobaenus,
+90,Grey Heron,Ardea cinerea,
+91,Corn Crake,Crex crex,
+92,Swfit,Apus apus,"common favoured over chimney-, alpine- or pallid- variant"
+93,Black Cap,Sylvia atricapilla,
+94,Whinchat,Saxicola rubetra,
+95,Jack Snipe,Lymnocryptes minimus,
+96,Hen Harrier,Circus cyaneus,
+97,Turtle Dove,Streptopelia turtur,
+98,Sand Martin,Riparia riparia,"synonomous with ""Bank Swallow"" for ebird taxonomy"
+99,Rock Dove,Columba livia,"synonymous with ""Rock Pigeon"" for ebird taxonomy"
+100,Sand Martin ,Riparia riparia,"synonomous with ""Bank Swallow"" for ebird taxonomy"
+101,Black Redstart,Phoenicurus ochruros,
+102,Dunlin,Calidris alpina,
+103,Goldeneye,Bucephala clangula,
+104,Golden Eye,Bucephala clangula,
+105,Waxwing,Bombycilla garrulus,
+106,Peregrine Falcon,Falco peregrinus,
+107,Peregrine,Falco peregrinus,
+108,Buzzard,Buteo buteo,
+109,Raven,Corvus corax,
+,,,
+,,,
